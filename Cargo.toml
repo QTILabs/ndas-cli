@@ -5,7 +5,8 @@ authors = ["Aditya Kresna <aditya.kresna@outlook.co.id>"]
 edition = "2018"
 
 [build-dependencies]
-bindgen = "0.53.1"
+bindgen = "0.55.1"
 
 [dependencies]
 signal-hook = "0.1.16"
+crossbeam-channel = "0.4.4"
