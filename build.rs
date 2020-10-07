@@ -7,6 +7,7 @@ fn main() {
     // Tell cargo to tell rustc to link the system bzip2
     // shared library.
     println!("cargo:rustc-link-lib=static=ndaskernel-hook");
+    println!("cargo:rustc-link-lib=static=pcapng");
     println!("cargo:rustc-link-lib=static=z");
     println!("cargo:rustc-link-lib=static=elf");
     println!("cargo:rustc-link-lib=static=bpf");
