@@ -1,0 +1,11 @@
+[package]
+name = "ndas-cli"
+version = "0.1.0"
+authors = ["Aditya Kresna <aditya.kresna@outlook.co.id>"]
+edition = "2018"
+
+[build-dependencies]
+bindgen = "0.53.1"
+
+[dependencies]
+signal-hook = "0.1.16"

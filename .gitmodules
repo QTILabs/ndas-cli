@@ -1,0 +1,3 @@
+[submodule "ndas-kernel"]
+	path = ndas-kernel
+	url = https://github.com/Ujang360/ndas-kernel.git
