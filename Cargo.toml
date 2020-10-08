@@ -10,7 +10,11 @@ bindgen = "0.55.1"
 [dependencies]
 chrono = "0.4.19"
 signal-hook = "0.1.16"
+ffi-convert = "0.3.0"
 crossbeam-channel = "0.4.4"
 crossbeam-queue = "0.2.3"
 lazy_static = "1.4.0"
 mimalloc = { version = "0.1.21", default-features = false }
+pnet = "0.26.0"
+dialoguer = "0.6.2"
+systemstat = "0.1.5"
