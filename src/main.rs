@@ -164,6 +164,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let start_instant = Instant::now();
 
     while !stop_flag.load(Ordering::Relaxed) && start_instant.elapsed() < selected_duration {
+        if start_instant.elapsed() < selected_duration {
+            stop_flag.store(true, Ordering::Relaxed);
+        }
+        
         while let Some(new_missed_counter) = get_missed_event() {
             missed_counter += new_missed_counter;
             last_drop_count += new_missed_counter;
