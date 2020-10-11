@@ -1,6 +1,8 @@
-extern crate bindgen;
-
+use bindgen;
+use std::boxed::Box;
 use std::env;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 use std::path::PathBuf;
 
 fn main() {
@@ -32,7 +34,16 @@ fn main() {
 
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
+    let binding_path = out_path.join("bindings.rs");
+    let mut binding_file = Box::new(File::create(binding_path.clone()).expect("Couldn't write bindings!"));
+    binding_file
+        .write(b"#[allow(dead_code)]\n\nmod ndas_kernel_ffi {\n")
+        .expect("Couldn't write bindings!");
+    Box::new(bindings).write(binding_file).expect("Couldn't write bindings!");
+    OpenOptions::new()
+        .append(true)
+        .open(binding_path)
+        .expect("Cannot open bindings.rs!")
+        .write(b"}\n")
         .expect("Couldn't write bindings!");
 }

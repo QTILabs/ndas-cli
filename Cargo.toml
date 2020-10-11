@@ -14,7 +14,9 @@ ffi-convert = "0.3.0"
 crossbeam-channel = "0.4.4"
 crossbeam-queue = "0.2.3"
 lazy_static = "1.4.0"
-mimalloc = { version = "0.1.21", default-features = false }
+mimalloc = { version = "0.1.22", default-features = false }
 pnet = "0.26.0"
 dialoguer = "0.6.2"
 systemstat = "0.1.5"
+sys-info = "0.7.0"
+pcap-file = "1.1.1"

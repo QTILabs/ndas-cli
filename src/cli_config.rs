@@ -3,14 +3,14 @@ use pnet::datalink;
 use std::io::Result as IOResult;
 use std::time::Duration;
 
-pub(crate) fn get_interfaces_name() -> Vec<String> {
+fn get_interfaces_name() -> Vec<String> {
     datalink::interfaces()
         .iter()
         .map(|nic| nic.name.clone())
         .collect::<Vec<String>>()
 }
 
-pub(crate) fn get_interface_selection() -> IOResult<String> {
+fn get_interface_selection() -> IOResult<String> {
     let interfaces_name = get_interfaces_name();
     let selection_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Please select network interface:")
@@ -21,7 +21,7 @@ pub(crate) fn get_interface_selection() -> IOResult<String> {
     Ok(interfaces_name.get(selection_index).unwrap().clone())
 }
 
-pub(crate) fn get_file_clipping() -> IOResult<u64> {
+fn get_file_clipping() -> IOResult<u64> {
     let clipping_options = &[
         ("1 MiB", 1024 * 1024),
         ("16 MiB", 16 * 1024 * 1024),
@@ -38,12 +38,36 @@ pub(crate) fn get_file_clipping() -> IOResult<u64> {
     Ok(clipping_options.get(selection_index).unwrap().1)
 }
 
-pub(crate) fn get_duration() -> IOResult<Duration> {
+fn get_duration() -> IOResult<Duration> {
     let inputted_duration: u64 = Input::new().with_prompt("Input recording duration (minutes)").interact()?;
 
     Ok(Duration::from_secs(inputted_duration * 60))
 }
 
-pub(crate) fn get_promiscuous_mode() -> IOResult<bool> {
+fn get_promiscuous_mode() -> IOResult<bool> {
     Confirm::new().with_prompt("Enable promiscuous?").interact()
+}
+
+#[derive(Clone)]
+pub(crate) struct CLIConfig {
+    pub(crate) interface_name: String,
+    pub(crate) file_size_clipping: u64,
+    pub(crate) record_duration: Duration,
+    pub(crate) promiscuous_mode: bool,
+}
+
+impl CLIConfig {
+    pub(crate) fn new() -> IOResult<Self> {
+        let record_duration = get_duration()?;
+        let file_size_clipping = get_file_clipping()?;
+        let promiscuous_mode = get_promiscuous_mode()?;
+        let interface_name = get_interface_selection()?;
+
+        Ok(Self {
+            interface_name,
+            file_size_clipping,
+            record_duration,
+            promiscuous_mode,
+        })
+    }
 }
