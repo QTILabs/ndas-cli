@@ -11,7 +11,7 @@ use std::sync::Arc;
 use std::thread::{spawn as spawn_thread, JoinHandle};
 use std::time::{Duration, Instant};
 
-const MAGIC_NUMBER: u32 = 0xB33FC453;
+const MAGIC_NUMBER: u32 = 0xA1B2C3D4;
 const VERSION_MAJOR: u16 = 0;
 const VERSION_MINOR: u16 = 1;
 
