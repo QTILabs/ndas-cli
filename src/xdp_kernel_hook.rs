@@ -1,28 +1,36 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+pub(crate) use ndas_kernel_ffi::MAX_PACKET_SIZE;
+
 use crate::cli_config::CLIConfig;
 use crate::sysstat_helper::SysInfo;
+use chrono::Utc;
 use crossbeam_queue::ArrayQueue;
-use ndas_kernel_ffi::{
-    perfevent_configure, perfevent_loop_tick, perfevent_set_promiscuous_mode, PerfEventLoopConfig, MAX_PACKET_SIZE,
-};
+use ndas_kernel_ffi::{perfevent_configure, perfevent_loop_tick, perfevent_set_promiscuous_mode, PerfEventLoopConfig};
+use pcap_file::pcap::PacketHeader;
 use std::ffi::{c_void, CString};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::{spawn as spawn_thread, JoinHandle};
 
-static mut DUMP_EVENT_QUEUE0: Option<Arc<ArrayQueue<Vec<u8>>>> = None;
+static mut DUMP_EVENT_QUEUE0: Option<Arc<ArrayQueue<(PacketHeader, Vec<u8>)>>> = None;
 static mut MISSED_EVENT_QUEUE0: Option<Arc<ArrayQueue<u64>>> = None;
 
 unsafe extern "C" fn on_event_received(event: *mut c_void, event_length: i32) -> i32 {
     let mut raw_sample = Vec::new();
-    let event_length = event_length as isize;
+    let event_length = event_length as u32;
+    let event_length_isize = event_length as isize;
+    let current_time = Utc::now();
+    let nanos = current_time.timestamp_nanos();
+    let ct_second = nanos / 1_000_000_000;
+    let ct_nanosecond = nanos - (ct_second * 1_000_000_000);
+    let packet_header = PacketHeader::new(ct_second as u32, ct_nanosecond as u32, event_length, event_length);
 
-    for i in 0..event_length {
+    for i in 0..event_length_isize {
         raw_sample.push(event.offset(i) as u8);
     }
 
-    let _ = DUMP_EVENT_QUEUE0.as_ref().unwrap().push(raw_sample);
+    let _ = DUMP_EVENT_QUEUE0.as_ref().unwrap().push((packet_header, raw_sample));
     -2
 }
 
@@ -61,7 +69,11 @@ pub(crate) fn start_perfevent_loop(
     stop_flag: &Arc<AtomicBool>,
     config: &CLIConfig,
     sys_info: &SysInfo,
-) -> (Vec<JoinHandle<()>>, Arc<ArrayQueue<Vec<u8>>>, Arc<ArrayQueue<u64>>) {
+) -> (
+    Vec<JoinHandle<()>>,
+    Arc<ArrayQueue<(PacketHeader, Vec<u8>)>>,
+    Arc<ArrayQueue<u64>>,
+) {
     let use_promiscuous_mode = config.promiscuous_mode;
     let max_queue_count = sys_info.get_total_memory() as usize / MAX_PACKET_SIZE as usize;
     init_queue(max_queue_count);
