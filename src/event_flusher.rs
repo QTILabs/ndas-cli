@@ -139,10 +139,6 @@ pub(crate) fn start_event_flusher(
         let mut current_pcap_writer = get_pcap_writer();
 
         while !stop_flag_clone.load(Ordering::Relaxed) && start_instant.elapsed() < config_clone.record_duration {
-            if start_instant.elapsed() < config_clone.record_duration {
-                stop_flag_clone.store(true, Ordering::Relaxed);
-            }
-
             if let Some(new_missed_counter) = missed_packet_queue.pop().ok() {
                 stats.increment_missed_counter(new_missed_counter)
             }
@@ -163,6 +159,7 @@ pub(crate) fn start_event_flusher(
             }
         }
 
+        stop_flag_clone.store(true, Ordering::Relaxed);
         println!("Flushing all remaining capture to disk, please wait...");
 
         while let Some(new_missed_counter) = missed_packet_queue.pop().ok() {

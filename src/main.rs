@@ -37,11 +37,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     let (perfevent_loop_handles, sample_packet_queue, missed_packet_queue) =
         start_perfevent_loop(&stop_flag, &config, &sysstat);
-    let _ = start_event_flusher(&stop_flag, &config, sysstat, sample_packet_queue, missed_packet_queue).join();
+    let flusher_handle = start_event_flusher(&stop_flag, &config, sysstat, sample_packet_queue, missed_packet_queue);
 
     for loop_handle in perfevent_loop_handles {
         let _ = loop_handle.join();
     }
+
+    let _ = flusher_handle.join();
 
     Ok(())
 }
