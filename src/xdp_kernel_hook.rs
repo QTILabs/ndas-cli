@@ -95,16 +95,20 @@ pub(crate) fn start_perfevent_loop(
         let stop_flag_clone = stop_flag.clone();
         perfevent_loop_handles.push(spawn_thread(move || {
             let cpu_id = i;
+            let mut raw_buffer_length = 0u64;
+            let mut raw_buffer = std::ptr::null_mut::<std::ffi::c_void>();
 
             while !stop_flag_clone.load(Ordering::Relaxed) {
                 unsafe {
-                    perfevent_loop_tick(cpu_id);
+                    perfevent_loop_tick(cpu_id, &mut raw_buffer, &mut raw_buffer_length);
                 }
             }
 
             if cpu_id == 0 && use_promiscuous_mode {
                 set_promiscuous_mode(0);
             }
+
+            std::mem::drop(raw_buffer);
         }));
     }
 

@@ -3,8 +3,8 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+//#[global_allocator]
+//static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 pub(crate) mod cli_config;
 pub(crate) mod event_flusher;
