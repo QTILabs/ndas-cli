@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cargo clean && cd ndas-kernel && \
+cargo clean --release && cd ndas-kernel && \
     make clean && make && cd .. && \
     cp ndas-kernel/xdp-dumper/xdp-dumper-kern.o ./ && \
     cp ndas-kernel/xdp-dumper/xdp-dumper-user ./ && \

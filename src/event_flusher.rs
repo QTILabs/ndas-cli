@@ -20,9 +20,9 @@ struct CaptureStats {
     total_missed_counter: u64,
     total_captured_counter: u64,
     total_captured_counter_bytes: u64,
-    last_missed_count: u64,
-    last_capture_count: u64,
-    last_capture_count_bytes: u64,
+    current_missed_count: u64,
+    current_capture_count: u64,
+    current_capture_count_bytes: u64,
 }
 
 impl CaptureStats {
@@ -32,36 +32,36 @@ impl CaptureStats {
             total_missed_counter: 0,
             total_captured_counter: 0,
             total_captured_counter_bytes: 0,
-            last_missed_count: 0,
-            last_capture_count: 0,
-            last_capture_count_bytes: 0,
+            current_missed_count: 0,
+            current_capture_count: 0,
+            current_capture_count_bytes: 0,
         }
     }
 
     fn increment_missed_counter(&mut self, new_missed: u64) {
-        self.last_missed_count += new_missed;
+        self.current_missed_count += new_missed;
         self.total_missed_counter += new_missed;
     }
 
     fn reset_last_missed(&mut self) -> u64 {
-        let last_missed = self.last_missed_count;
-        self.last_missed_count = 0;
+        let last_missed = self.current_missed_count;
+        self.current_missed_count = 0;
 
         last_missed
     }
 
     fn increment_capture_counter(&mut self, new_packet_size: u64) {
         self.total_captured_counter += 1;
-        self.last_capture_count += 1;
+        self.current_capture_count += 1;
         self.total_captured_counter_bytes += new_packet_size;
-        self.last_capture_count_bytes += new_packet_size;
+        self.current_capture_count_bytes += new_packet_size;
     }
 
     fn reset_last_capture(&mut self) -> (u64, u64) {
-        let last_capture = self.last_capture_count;
-        let last_capture_bytes = self.last_capture_count_bytes;
-        self.last_capture_count = 0;
-        self.last_capture_count_bytes = 0;
+        let last_capture = self.current_capture_count;
+        let last_capture_bytes = self.current_capture_count_bytes;
+        self.current_capture_count = 0;
+        self.current_capture_count_bytes = 0;
 
         (last_capture, last_capture_bytes)
     }
@@ -73,13 +73,13 @@ impl CaptureStats {
 
     fn print_to_console(&self) {
         println!(
-            "[{}] => LLoss {} | LCap {} || TLost {} | TCap {} | TCapMB {} || Disk: {}%",
-            Local::now().to_rfc3339(),
-            self.last_missed_count,
-            self.last_capture_count,
+            "[{}] => CLoss {:010} pkts | CCap {:010} pkts || TLost {:010} pkts | TCap ({:010} pkts/{:06} MB) || Disk: {:02}%",
+            Local::now().timestamp(),
+            self.current_missed_count,
+            self.current_capture_count,
             self.total_missed_counter,
             self.total_captured_counter,
-            self.total_captured_counter_bytes as f64 / 1048576.0,
+            (self.total_captured_counter_bytes as f64 / 1048576.0) as u32,
             self.sysinfo.get_disk_usage(),
         );
     }
@@ -147,7 +147,7 @@ pub(crate) fn start_event_flusher(
                 stats.increment_capture_counter(new_packet.1.len() as u64);
                 write_packet(&mut current_pcap_writer, &new_packet);
 
-                if stats.last_capture_count_bytes >= config_clone.file_size_clipping {
+                if stats.current_capture_count_bytes >= config_clone.file_size_clipping {
                     stats.reset_all_last_counter();
                     current_pcap_writer = get_pcap_writer();
                 }
@@ -170,7 +170,7 @@ pub(crate) fn start_event_flusher(
             stats.increment_capture_counter(new_packet.1.len() as u64);
             write_packet(&mut current_pcap_writer, &new_packet);
 
-            if stats.last_capture_count_bytes >= config_clone.file_size_clipping {
+            if stats.current_capture_count_bytes >= config_clone.file_size_clipping {
                 stats.reset_all_last_counter();
                 current_pcap_writer = get_pcap_writer();
             }
