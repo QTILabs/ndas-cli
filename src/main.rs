@@ -45,5 +45,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let _ = flusher_handle.join();
 
+    unsafe {
+        xdp_kernel_hook::perfevent_cleanup();
+    }
+
     Ok(())
 }

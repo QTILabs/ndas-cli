@@ -6,7 +6,9 @@ use crate::cli_config::CLIConfig;
 use crate::sysstat_helper::SysInfo;
 use chrono::Utc;
 use crossbeam_queue::ArrayQueue;
-use ndas_kernel_ffi::{perfevent_configure, perfevent_loop_tick, perfevent_set_promiscuous_mode, PerfEventLoopConfig};
+pub use ndas_kernel_ffi::{
+    perfevent_cleanup, perfevent_configure, perfevent_loop_tick, perfevent_set_promiscuous_mode, PerfEventLoopConfig,
+};
 use pcap_file::pcap::PacketHeader;
 use std::ffi::{c_void, CString};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -47,10 +49,10 @@ fn configure_perfevent(perfevent_config: PerfEventLoopConfig) -> u8 {
     let cpu_count = Box::new(cpu_count);
     let cpu_count = Box::into_raw(cpu_count);
     let perfevent_config = Box::new(perfevent_config);
-    let perfevent_config = Box::into_raw(perfevent_config);
+    let perfevent_config_raw = Box::into_raw(perfevent_config);
 
     unsafe {
-        perfevent_configure(perfevent_config, cpu_count);
+        perfevent_configure(perfevent_config_raw, cpu_count);
     }
 
     unsafe { *cpu_count }
