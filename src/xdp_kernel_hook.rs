@@ -17,20 +17,17 @@ static mut DUMP_EVENT_QUEUE0: Option<Arc<ArrayQueue<(PacketHeader, Vec<u8>)>>> =
 static mut MISSED_EVENT_QUEUE0: Option<Arc<ArrayQueue<u64>>> = None;
 
 unsafe extern "C" fn on_event_received(event: *mut c_void, event_length: i32) -> i32 {
-    let mut raw_sample = Vec::new();
     let event_length = event_length as u32;
-    let event_length_isize = event_length as isize;
+    let event_length_usize = event_length as usize;
     let current_time = Utc::now();
-    let nanos = current_time.timestamp_nanos();
-    let ct_second = nanos / 1_000_000_000;
-    let ct_nanosecond = nanos - (ct_second * 1_000_000_000);
-    let packet_header = PacketHeader::new(ct_second as u32, ct_nanosecond as u32, event_length, event_length);
-
-    for i in 0..event_length_isize {
-        raw_sample.push(event.offset(i) as u8);
-    }
-
+    let ct_second = current_time.timestamp();
+    let ct_nanosecond = current_time.timestamp_subsec_nanos();
+    let packet_header = PacketHeader::new(ct_second as u32, ct_nanosecond, event_length, event_length);
+    let mut raw_sample = vec![0u8; event_length_usize];
+    let raw_sample_ptr = raw_sample.as_mut_ptr();
+    std::ptr::copy_nonoverlapping(event, raw_sample_ptr as *mut c_void, event_length_usize);
     let _ = DUMP_EVENT_QUEUE0.as_ref().unwrap().push((packet_header, raw_sample));
+
     -2
 }
 

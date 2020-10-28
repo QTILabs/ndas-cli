@@ -93,7 +93,7 @@ fn write_all(pcap_writer: &mut PcapWriter<File>, packets: &Vec<(PacketHeader, Ve
 }
 
 fn write_packet(pcap_writer: &mut PcapWriter<File>, packet: &(PacketHeader, Vec<u8>)) {
-    let new_packet = Packet::new(packet.0.ts_sec, packet.0.ts_sec, &packet.1[..], packet.0.incl_len);
+    let new_packet = Packet::new(packet.0.ts_sec, packet.0.ts_nsec, &packet.1[..], packet.0.orig_len);
     pcap_writer.write_packet(&new_packet).expect("Cannot write packet!");
 }
 

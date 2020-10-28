@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-cd ndas-kernel && make clean && make && cd .. && \
+cargo clean && cd ndas-kernel && \
+    make clean && make && cd .. && \
     cp ndas-kernel/xdp-dumper/xdp-dumper-kern.o ./ && \
     cp ndas-kernel/xdp-dumper/xdp-dumper-user ./ && \
     sudo ar rcs /usr/local/lib/libndaskernel-hook.a ndas-kernel/xdp-dumper/xdp-dumper.o && \
