@@ -1,0 +1,6 @@
+[project]
+name = "qti-ndas-cli"
+slug = "qti-ndas-cli"
+
+[amem]
+server = "https://amem.flusci.org"

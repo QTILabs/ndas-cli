@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "amem": {
+      "type": "http",
+      "url": "https://amem.flusci.org/mcp",
+      "tools": [
+        "*"
+      ],
+      "headers": {
+        "Authorization": "Bearer ${AMEM_BEARER_TOKEN}"
+      }
+    }
+  }
+}
